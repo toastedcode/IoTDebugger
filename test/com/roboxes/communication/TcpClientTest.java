@@ -1,12 +1,12 @@
-package com.toast.iot;
+package com.roboxes.communication;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.junit.Test;
 
-import com.toast.android.communication.TcpClient;
-import com.toast.android.communication.TcpClientListener;
+import com.roboxes.communication.TcpClient;
+import com.roboxes.communication.TcpClientListener;
 
 public class TcpClientTest implements TcpClientListener
 {

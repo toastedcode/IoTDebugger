@@ -1,4 +1,4 @@
-package com.toast.iot;
+package com.roboxes.debugger;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -14,19 +16,22 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
-import com.toast.android.communication.TcpClient;
-import com.toast.android.communication.TcpClientListener;
-import com.toast.android.messaging.JsonProtocol;
-import com.toast.android.messaging.Message;
-import com.toast.android.scanner.RoboxInfo;
-import com.toast.android.scanner.Scanner;
-import com.toast.android.scanner.ScannerListener;
+import com.roboxes.communication.TcpClient;
+import com.roboxes.communication.TcpClientListener;
+import com.roboxes.messaging.JsonProtocol;
+import com.roboxes.messaging.Message;
+import com.roboxes.scanner.RoboxInfo;
+import com.roboxes.scanner.Scanner;
+import com.roboxes.scanner.ScannerListener;
 
 public class Debugger implements TcpClientListener, ScannerListener
 {
@@ -111,10 +116,12 @@ public class Debugger implements TcpClientListener, ScannerListener
       
       if ((client != null) && client.isConnected())
       {
+         /*
          // Setup remote logging.
          Message message = new Message("setLogger");
          message.put("adapter",  "debug");
          client.send(protocol.serialize(message));
+         */
          
          // Stop the scanner.
          scanner.stop();
@@ -214,16 +221,7 @@ public class Debugger implements TcpClientListener, ScannerListener
          }          
       });
       shortcutPanel.add(button);
-      
-      button = new JButton("Reset");
-      button.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent e)
-         {
-            sendMessage(new Message("reset"));
-         }          
-      });
-      shortcutPanel.add(button);
-      
+ 
       frame.setSize(640, 480);
       frame.setVisible(true);
    }
@@ -300,4 +298,6 @@ public class Debugger implements TcpClientListener, ScannerListener
    private TcpClient client;
    
    private JsonProtocol protocol = new JsonProtocol();
+   
+   private Timer penetrationTimer;
 }
