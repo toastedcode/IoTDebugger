@@ -8,7 +8,6 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -16,12 +15,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
@@ -62,22 +58,12 @@ public class Debugger implements TcpClientListener, ScannerListener
       
       createGui();
       
-      try
-      {
-         // TODO: Add in properties file.
-         localAddress = InetAddress.getByName("10.1.50.218");
-
-         // Start scanning for Roboxes.
-         println("Scanning for roboxes ...");
-         scanner = new Scanner(UDP_PORT, UDP_PORT, localAddress);
-         scanner.setProtocol(protocol);
-         scanner.addListener(this);
-         scanner.start();
-      }
-      catch (UnknownHostException e)
-      {
-         System.out.print("Bad local address.\n"); 
-      }
+      // Start scanning for Roboxes.
+      println("Scanning for roboxes ...");
+      scanner = new Scanner(UDP_PORT, UDP_PORT);
+      scanner.setProtocol(protocol);
+      scanner.addListener(this);
+      scanner.start();
    }
    
    // **************************************************************************
