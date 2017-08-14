@@ -49,6 +49,7 @@ public class Scanner implements DataListener
    {
       server.start();
       
+      pingTimer = new Timer();
       pingTimer.scheduleAtFixedRate(new TimerTask()
       {
          @Override
