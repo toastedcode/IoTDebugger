@@ -43,13 +43,13 @@ public class UdpServer implements Runnable
    public void start()
    {
       listening = true;
-      System.out.format("UDP server listening on port %d\n", serverSocket.getLocalPort());
+      System.out.format("UDP server listening on port %d.\n", serverSocket.getLocalPort());
    }
 
    public void stop()
    {
       listening = false;
-      System.out.format("UDP server stopped listening");
+      System.out.format("UDP server stopped listening.\n");
    }
    
    public int getPort()

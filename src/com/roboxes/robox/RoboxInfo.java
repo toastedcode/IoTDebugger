@@ -1,4 +1,4 @@
-package com.roboxes.scanner;
+package com.roboxes.robox;
 
 import java.net.InetAddress;
 

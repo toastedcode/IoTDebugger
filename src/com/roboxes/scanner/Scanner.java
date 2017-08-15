@@ -11,6 +11,7 @@ import com.roboxes.communication.DataListener;
 import com.roboxes.communication.UdpServer;
 import com.roboxes.messaging.Message;
 import com.roboxes.messaging.Protocol;
+import com.roboxes.robox.RoboxInfo;
 
 public class Scanner implements DataListener
 {
@@ -117,7 +118,7 @@ public class Scanner implements DataListener
       InetAddress nullInetAddress = null;
       try
       {
-         nullInetAddress = InetAddress.getByAddress(new byte[]{0, 0, 0, 0});
+         nullInetAddress = InetAddress.getByName("0.0.0.0");
       }
       catch (UnknownHostException e)
       {

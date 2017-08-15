@@ -141,8 +141,6 @@ public class HealthMonitor implements TcpClientListener
          {
             listener.onHealthChange(this);
          }
-         
-         System.out.format("HealthMonitor::onSuccessfulPing: %d\n", health);
       }
    }
    
@@ -157,8 +155,6 @@ public class HealthMonitor implements TcpClientListener
          {
             listener.onHealthChange(this);
          }
-         
-         System.out.format("HealthMonitor::onUnsuccessfulPing: %d\n", health);
       }
    }
 

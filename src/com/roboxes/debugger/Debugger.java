@@ -4,15 +4,20 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.Timer;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -21,17 +26,17 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
-import com.roboxes.communication.TcpClient;
-import com.roboxes.communication.TcpClientListener;
+import com.roboxes.gui.DPadGui;
 import com.roboxes.messaging.JsonProtocol;
 import com.roboxes.messaging.Message;
+import com.roboxes.robox.Robox;
+import com.roboxes.robox.RoboxInfo;
+import com.roboxes.robox.RoboxListener;
 import com.roboxes.scanner.HealthMonitor;
-import com.roboxes.scanner.HealthMonitorListener;
-import com.roboxes.scanner.RoboxInfo;
 import com.roboxes.scanner.Scanner;
 import com.roboxes.scanner.ScannerListener;
 
-public class Debugger implements TcpClientListener, ScannerListener, HealthMonitorListener
+public class Debugger implements ScannerListener, RoboxListener
 {
    public static void main(final String args[])
    {
@@ -60,9 +65,11 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
       
       createGui();
       
+      selectInterfaceDialog();
+      
       // Start scanning for Roboxes.
       println("Scanning for roboxes ...");
-      scanner = new Scanner(UDP_PORT, UDP_PORT);
+      scanner = new Scanner(UDP_PORT, UDP_PORT, localAddress);
       scanner.setProtocol(protocol);
       scanner.addListener(this);
       scanner.start();
@@ -76,87 +83,43 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
    {
       if (detectedRoboxes.add(roboxInfo))
       {
-         // Connect to the Robox with TCP socket connection.
-         client = new TcpClient(roboxInfo.address, TCP_PORT, localAddress, false);
-         client.addListener(this);
-         client.connect();
+         // Create a new robox.
+         robox = new Robox(roboxInfo);
+         robox.setProtocol(new JsonProtocol());
+         robox.setLocalAddress(localAddress);
+         robox.addListener(this);
+
+         // Connect!
+         robox.connect();
       }
    }
    
    // **************************************************************************
-   //                          TcpClientListener interface
-
+   //                          RoboxListener interface
+   
    @Override
-   public void receiveData(String data)
+   public void onConnected(Robox robox)
    {
-      Message message = protocol.parse(data);
+      println("Robox [" +  robox.getRoboxInfo().deviceId + "] connected at " + robox.getRoboxInfo().address.toString() + ".");
       
-      if (message != null)
-      {
-         handleMessage(message);
-      }
+      // Stop the scanner.
+      scanner.stop();   
    }
 
    @Override
-   public void onConnected()
+   public void onDisconnected(Robox robox)
    {
-      println("Debugger connected.");
+      println("Robox [" +  robox.getRoboxInfo().deviceId + "] disconnected.");
       
-      if ((client != null) && client.isConnected())
-      {
-         /*
-         // Setup remote logging.
-         Message message = new Message("setLogger");
-         message.put("adapter",  "debug");
-         client.send(protocol.serialize(message));
-         */
-         
-         // Stop the scanner.
-         scanner.stop();
-         
-         // Start the health monitor.
-         healthMonitor = new HealthMonitor(client, protocol, 1000, 1);
-         healthMonitor.addListener(this);
-         healthMonitor.start();
-      }
-   }
-
-   @Override
-   public void onDisconnected()
-   {
-      println("Debugger disconnected.");
-      
-      // TODO: Just remove the one that disconnected.
+      // Start the scanner.
       detectedRoboxes.clear();
-      
-      // Stop the health monitor.
-      healthMonitor.stop();
-      healthMonitor = null;
-      
-      // Start scanning again.
       scanner.start();
    }
 
    @Override
-   public void onConnectionFailure()
+   public void onMessage(Robox robox, Message message)
    {
-      println("Debugger failed to connect.");
-      
-      client = null;
-   }
-
-   // **************************************************************************
-   //                          HealthMonitorListener interface
-
-   @Override
-   public void onHealthChange(HealthMonitor monitor)
-   {
-      if (monitor.getHealth() == 0)
-      {
-         println("Health monitor failure.");
-         
-         client.disconnect();
-      }
+      handleMessage(message);
    }
 
    // **************************************************************************
@@ -201,10 +164,7 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
             println(text);
             commandBox.setText("");
             
-            if ((client != null) && client.isConnected())
-            {
-               client.send(text);
-            }
+            robox.sendRawMessage(text);
          }
       });
       
@@ -219,7 +179,7 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
       button.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e)
          {
-            sendMessage(new Message("ping"));
+            robox.ping();
          }          
       });
       shortcutPanel.add(button);
@@ -228,7 +188,7 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
       button.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e)
          {
-            sendMessage(new Message("property"));
+            robox.sendMessage(new Message("property"));
          }          
       });
       shortcutPanel.add(button);
@@ -237,13 +197,48 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
       frame.setVisible(true);
    }
    
+   private void selectInterfaceDialog()
+   {
+      try
+      {
+         Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+         
+         List<NetworkInterface> physicalNets = new ArrayList<>();
+         
+         for (NetworkInterface net : Collections.list(nets))
+         {
+            if (net.isUp() && !net.isLoopback() && !net.isVirtual())
+            {
+               physicalNets.add(net);
+            }
+         }
+         
+         NetworkInterface net = 
+               (NetworkInterface)JOptionPane.showInputDialog(
+                  frame,
+                  "Select the network interface to use:\n",
+                  "Select Interface",
+                  JOptionPane.PLAIN_MESSAGE,
+                  null,
+                  physicalNets.toArray(),
+                  "ham");
+         
+         if (net != null)
+         {
+            localAddress = net.getInetAddresses().nextElement();
+         }
+      }
+      catch (SocketException e)
+      {
+         
+      }
+   }
+   
    private void handleMessage(Message message)
    {
       if (message.getMessageId().equals("ping"))
       {
-         Message replyMessage = new Message("pong");
-         replyMessage.setDestination(message.getSource());
-         sendMessage(replyMessage);
+         robox.pong();
       }
       else if (message.getMessageId().equals("pong"))
       {
@@ -281,22 +276,7 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
       }      
    }
    
-   private void sendMessage(Message message)
-   {
-      if ((client != null) && client.isConnected())
-      {
-         String data = protocol.serialize(message);
-         if (!data.isEmpty())
-         {
-            println(data);
-            client.send(protocol.serialize(message));
-         }
-      }
-   }
-   
    private static final int UDP_PORT = 1993;
-   
-   private static final int TCP_PORT = 1977;
    
    private JFrame frame;
    
@@ -306,15 +286,13 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
    
    private Scanner scanner;
    
+   private Robox robox;
+   
    private Set<RoboxInfo> detectedRoboxes = new HashSet<>();
    
    InetAddress localAddress;
    
-   private TcpClient client;
-   
    private JsonProtocol protocol = new JsonProtocol();
-   
-   private Timer penetrationTimer;
    
    HealthMonitor healthMonitor;
 }

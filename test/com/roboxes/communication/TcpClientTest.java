@@ -5,9 +5,6 @@ import java.net.UnknownHostException;
 
 import org.junit.Test;
 
-import com.roboxes.communication.TcpClient;
-import com.roboxes.communication.TcpClientListener;
-
 public class TcpClientTest implements TcpClientListener
 {
    @Test

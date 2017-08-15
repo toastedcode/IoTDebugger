@@ -126,6 +126,8 @@ public class TcpClient implements Runnable
          try
          {
             clientSocket.close();
+            input.close();
+            output.close();
          } 
          catch (IOException e)
          {
@@ -178,7 +180,6 @@ public class TcpClient implements Runnable
    @Override
    public void run()
    {
-      System.out.println("Thread start.");
       while (true)
       {
          try
