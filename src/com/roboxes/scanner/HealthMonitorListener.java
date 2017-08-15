@@ -2,6 +2,6 @@ package com.roboxes.scanner;
 
 public interface HealthMonitorListener
 {
-   void onHealthChange(
+   public void onHealthChange(
       HealthMonitor monitor);
 }

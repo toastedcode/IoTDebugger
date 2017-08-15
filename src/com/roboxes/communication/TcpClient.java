@@ -206,68 +206,7 @@ public class TcpClient implements Runnable
          }
       }
    }
-   
-   /*
-   @Override
-   public void run()
-   {
-      final char[] buffer = new char[1024];
-      final int CR = '\r';
-      final int LF = '\n';
-   
-      int readSuccess = 0;
-      int position = 0;
-      boolean done = false;
-      
-      System.out.println("Thread start.");
-      while (true)
-      {
-         try
-         {
-            if (isConnected() && (input != null) && input.ready())
-            {
-               while (!done)
-               {
-                  // Read a character at a time.
-                  readSuccess = input.read(buffer, position, 1);
-                  
-                  done = ((readSuccess == -1) || (buffer[position] == CR) || (buffer[position] == LF));
-                  
-                  position++;
-               }
-               
-               // Check for disconnect.
-               if (readSuccess == -1)
-               {
-                  onDisconnected();
-               }
-               // Check for data.
-               else if (position > 1)
-               {
-                  // Create the data string from the buffer.
-                  String data = new String(buffer, 0, (position - 1));
-                  
-                  // Alert listeners.
-                  for (DataListener listener : listeners)
-                  {
-                     listener.receiveData(data);
-                  }
-               }
-               
-               position = 0;
-               done = false;
-            }
-            
-            Thread.sleep(10);
-         }
-         catch (Exception e)
-         {
-            disconnect();
-         }
-      }
-   }
-   */
-   
+  
    // **************************************************************************
    //                              Protected
    // **************************************************************************   

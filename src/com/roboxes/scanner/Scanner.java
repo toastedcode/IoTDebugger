@@ -14,7 +14,7 @@ import com.roboxes.messaging.Protocol;
 
 public class Scanner implements DataListener
 {
-   final int DELAY = 10 * 1000;  // milliseconds
+   final int DELAY = 5 * 1000;  // milliseconds
    
    public Scanner(int sendPort, int listenPort, InetAddress localIpAddress)
    {
@@ -64,6 +64,7 @@ public class Scanner implements DataListener
    {
       server.stop();
       pingTimer.cancel();
+      detected.clear();
    }
    
    public void addListener(ScannerListener listener)

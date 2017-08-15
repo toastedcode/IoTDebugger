@@ -1,5 +1,6 @@
 package com.roboxes.scanner;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,13 +35,13 @@ public class HealthMonitor implements TcpClientListener
       return (health);
    }
    
-   void addListener(
+   public void addListener(
       HealthMonitorListener listener)
    {
       listeners.add(listener);
    }
    
-   void removeListener(
+   public void removeListener(
       HealthMonitorListener listener)
    {
       listeners.remove(listener);
@@ -90,7 +91,7 @@ public class HealthMonitor implements TcpClientListener
          Message message = protocol.parse(data);
          
          if ((message != null) &&
-             (message.getMessageId() == "pong"))
+             (message.getMessageId().equals("pong")))
          {
             receivedPong = true;
          }
@@ -140,6 +141,8 @@ public class HealthMonitor implements TcpClientListener
          {
             listener.onHealthChange(this);
          }
+         
+         System.out.format("HealthMonitor::onSuccessfulPing: %d\n", health);
       }
    }
    
@@ -154,6 +157,8 @@ public class HealthMonitor implements TcpClientListener
          {
             listener.onHealthChange(this);
          }
+         
+         System.out.format("HealthMonitor::onUnsuccessfulPing: %d\n", health);
       }
    }
 
@@ -167,7 +172,7 @@ public class HealthMonitor implements TcpClientListener
    
    private int health;
    
-   List<HealthMonitorListener> listeners;
+   List<HealthMonitorListener> listeners = new ArrayList<>();
    
    private Timer pingTimer;
    

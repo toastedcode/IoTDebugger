@@ -77,7 +77,7 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
       if (detectedRoboxes.add(roboxInfo))
       {
          // Connect to the Robox with TCP socket connection.
-         client = new TcpClient(roboxInfo.address, TCP_PORT, localAddress, true);
+         client = new TcpClient(roboxInfo.address, TCP_PORT, localAddress, false);
          client.addListener(this);
          client.connect();
       }
@@ -100,7 +100,7 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
    @Override
    public void onConnected()
    {
-      println("Logger connected.");
+      println("Debugger connected.");
       
       if ((client != null) && client.isConnected())
       {
@@ -115,7 +115,8 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
          scanner.stop();
          
          // Start the health monitor.
-         healthMonitor = new HealthMonitor(client, protocol, 2000, 5);
+         healthMonitor = new HealthMonitor(client, protocol, 1000, 1);
+         healthMonitor.addListener(this);
          healthMonitor.start();
       }
    }
@@ -123,10 +124,14 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
    @Override
    public void onDisconnected()
    {
-      println("Logger disconnected.");
+      println("Debugger disconnected.");
       
       // TODO: Just remove the one that disconnected.
       detectedRoboxes.clear();
+      
+      // Stop the health monitor.
+      healthMonitor.stop();
+      healthMonitor = null;
       
       // Start scanning again.
       scanner.start();
@@ -135,7 +140,7 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
    @Override
    public void onConnectionFailure()
    {
-      println("Logger failed to connect.");
+      println("Debugger failed to connect.");
       
       client = null;
    }
@@ -239,6 +244,10 @@ public class Debugger implements TcpClientListener, ScannerListener, HealthMonit
          Message replyMessage = new Message("pong");
          replyMessage.setDestination(message.getSource());
          sendMessage(replyMessage);
+      }
+      else if (message.getMessageId().equals("pong"))
+      {
+         // Silently ignore.
       }
       else if (message.getMessageId().equals("logMessage"))
       {
