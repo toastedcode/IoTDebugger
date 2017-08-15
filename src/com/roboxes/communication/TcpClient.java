@@ -175,7 +175,6 @@ public class TcpClient implements Runnable
    // **************************************************************************
    //                              Thread interface
 
-   /*
    @Override
    public void run()
    {
@@ -207,7 +206,6 @@ public class TcpClient implements Runnable
          }
       }
    }
-   */
    
    /*
    @Override

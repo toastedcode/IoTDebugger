@@ -25,11 +25,13 @@ import com.roboxes.communication.TcpClient;
 import com.roboxes.communication.TcpClientListener;
 import com.roboxes.messaging.JsonProtocol;
 import com.roboxes.messaging.Message;
+import com.roboxes.scanner.HealthMonitor;
+import com.roboxes.scanner.HealthMonitorListener;
 import com.roboxes.scanner.RoboxInfo;
 import com.roboxes.scanner.Scanner;
 import com.roboxes.scanner.ScannerListener;
 
-public class Debugger implements TcpClientListener, ScannerListener
+public class Debugger implements TcpClientListener, ScannerListener, HealthMonitorListener
 {
    public static void main(final String args[])
    {
@@ -111,6 +113,10 @@ public class Debugger implements TcpClientListener, ScannerListener
          
          // Stop the scanner.
          scanner.stop();
+         
+         // Start the health monitor.
+         healthMonitor = new HealthMonitor(client, protocol, 2000, 5);
+         healthMonitor.start();
       }
    }
 
@@ -132,6 +138,20 @@ public class Debugger implements TcpClientListener, ScannerListener
       println("Logger failed to connect.");
       
       client = null;
+   }
+
+   // **************************************************************************
+   //                          HealthMonitorListener interface
+
+   @Override
+   public void onHealthChange(HealthMonitor monitor)
+   {
+      if (monitor.getHealth() == 0)
+      {
+         println("Health monitor failure.");
+         
+         client.disconnect();
+      }
    }
 
    // **************************************************************************
@@ -286,4 +306,6 @@ public class Debugger implements TcpClientListener, ScannerListener
    private JsonProtocol protocol = new JsonProtocol();
    
    private Timer penetrationTimer;
+   
+   HealthMonitor healthMonitor;
 }
