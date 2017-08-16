@@ -1,6 +1,7 @@
 package com.roboxes.robox;
 
 import java.net.InetAddress;
+import java.util.Arrays;
 
 public class RoboxInfo
 {
@@ -20,7 +21,8 @@ public class RoboxInfo
    {
       return ((rhs instanceof RoboxInfo) && 
               (deviceId.equals(((RoboxInfo)rhs).deviceId)) &&
-              (address.equals(((RoboxInfo)rhs).address)));
+              (address.equals(((RoboxInfo)rhs).address)) &&
+              (Arrays.equals(macAddress, ((RoboxInfo)rhs).macAddress)));
    }
    
    @Override

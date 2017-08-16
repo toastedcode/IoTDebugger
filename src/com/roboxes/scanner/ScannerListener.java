@@ -7,4 +7,6 @@ public interface ScannerListener
    public void onDetected(
       RoboxInfo roboxInfo);
    
+   public void onUndetected(
+         RoboxInfo roboxInfo);
 }

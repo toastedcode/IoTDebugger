@@ -2,7 +2,9 @@ package com.roboxes.scanner;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,11 +17,10 @@ import com.roboxes.robox.RoboxInfo;
 
 public class Scanner implements DataListener
 {
-   final int DELAY = 5 * 1000;  // milliseconds
-   
-   public Scanner(int sendPort, int listenPort, InetAddress localIpAddress)
+   public Scanner(int sendPort, int listenPort, InetAddress localIpAddress, int pingFrequency)
    {
       this.sendPort = sendPort;
+      this.pingFrequency = pingFrequency;
       
       server = new UdpServer(listenPort, localIpAddress);
       server.addListener(this);
@@ -57,8 +58,10 @@ public class Scanner implements DataListener
          public void run()
          {
             broadcastPing();
+            
+            checkUndetected();
          }
-      }, 0, DELAY);
+      }, 0, pingFrequency);
    }
    
    public void stop()
@@ -80,38 +83,12 @@ public class Scanner implements DataListener
    
    public Set<RoboxInfo> getDetected()
    {
-      return (detected);
+      return (detected.keySet());
    }
    
-   protected void onDetected(RoboxInfo roboxInfo)
-   {
-      if (detected.contains(roboxInfo) == false)
-      {
-         detected.add(roboxInfo);
-         
-         for (ScannerListener listener : listeners)
-         {
-            listener.onDetected(roboxInfo);
-         }
-      }
-   }
+   // **************************************************************************
+   //                         TcpClientListener interface
    
-   protected void broadcastPing()
-   {
-      try
-      {
-         InetAddress BROADCAST_ADDRESS = InetAddress.getByName("255.255.255.255");
-         
-         server.send(BROADCAST_ADDRESS, sendPort, protocol.serialize(pingMessage));
-         
-         System.out.format("Sent ping on port %d\n", sendPort);
-      }
-      catch (UnknownHostException e)
-      {
-         System.out.format("%s\n", e.toString());
-      }
-   }
-
    @Override
    public void receiveData(String data)
    {
@@ -152,11 +129,105 @@ public class Scanner implements DataListener
       }
    }
    
+   // **************************************************************************
+      
+   protected void onDetected(RoboxInfo roboxInfo)
+   {
+      if (detected.containsKey(roboxInfo) == false)
+      {
+         detected.put(roboxInfo, new PingInfo(true, PingInfo.MAX_HEALTH));
+         
+         for (ScannerListener listener : listeners)
+         {
+            listener.onDetected(roboxInfo);
+         }
+      }
+      else
+      {
+         detected.get(roboxInfo).recordResponse();
+      }
+   }
+   
+   protected void onUndetected(RoboxInfo roboxInfo)
+   {
+      detected.remove(roboxInfo);
+      
+      for (ScannerListener listener : listeners)
+      {
+         listener.onUndetected(roboxInfo);
+      }
+   }
+   
+   protected void broadcastPing()
+   {
+      try
+      {
+         InetAddress BROADCAST_ADDRESS = InetAddress.getByName("255.255.255.255");
+         
+         server.send(BROADCAST_ADDRESS, sendPort, protocol.serialize(pingMessage));
+         
+         //System.out.format("Sent ping on port %d\n", sendPort);
+      }
+      catch (UnknownHostException e)
+      {
+         System.out.format("%s\n", e.toString());
+      }
+   }
+   
+   protected void checkUndetected()
+   {
+      for (RoboxInfo roboxInfo : detected.keySet())
+      {
+         PingInfo pingInfo = detected.get(roboxInfo);
+         
+         // Check if we got a ping response from this robox.
+         if (pingInfo.gotResponse == false)
+         {
+            pingInfo.health--;
+            
+            if (pingInfo.health == 0)
+            {
+               onUndetected(roboxInfo);
+            }
+         }
+         
+         // Reset for next round.
+         pingInfo.gotResponse = false;
+      }
+   }
+   
+   private class PingInfo
+   {
+      public PingInfo(boolean gotResponse, int health)
+      {
+         this.gotResponse = gotResponse;
+         this.health = health;
+      }
+      
+      public void recordResponse()
+      {
+         if (health < MAX_HEALTH)
+         {
+            health++;
+         }
+         
+         gotResponse = true;
+      }
+      
+      public static final int MAX_HEALTH = 3;
+      
+      public boolean gotResponse;
+      
+      public int health;
+   }
+   
    private int sendPort = 0;
+   
+   private int pingFrequency = 0;
    
    private Timer pingTimer;
    
-   private Set<RoboxInfo> detected = new HashSet<>();
+   private Map<RoboxInfo, PingInfo> detected = new HashMap<>();
    
    private Set<ScannerListener> listeners = new HashSet<>();
    

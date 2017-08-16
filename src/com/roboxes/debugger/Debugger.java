@@ -26,7 +26,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
-import com.roboxes.gui.DPadGui;
 import com.roboxes.messaging.JsonProtocol;
 import com.roboxes.messaging.Message;
 import com.roboxes.robox.Robox;
@@ -69,20 +68,22 @@ public class Debugger implements ScannerListener, RoboxListener
       
       // Start scanning for Roboxes.
       println("Scanning for roboxes ...");
-      scanner = new Scanner(UDP_PORT, UDP_PORT, localAddress);
+      scanner = new Scanner(UDP_PORT, UDP_PORT, localAddress, SCANNER_FREQUENCY);
       scanner.setProtocol(protocol);
       scanner.addListener(this);
       scanner.start();
    }
    
    // **************************************************************************
-   //                          Scanner interface
+   //                         ScannerListener interface
    
    @Override
    public void onDetected(RoboxInfo roboxInfo)
    {
       if (detectedRoboxes.add(roboxInfo))
       {
+         println("Detected " + roboxInfo.deviceId + " at " + roboxInfo.address.toString() + ".");
+         
          // Create a new robox.
          robox = new Robox(roboxInfo);
          robox.setProtocol(new JsonProtocol());
@@ -93,6 +94,12 @@ public class Debugger implements ScannerListener, RoboxListener
          robox.connect();
       }
    }
+
+   @Override
+   public void onUndetected(RoboxInfo roboxInfo)
+   {
+      println("Undetected robox " + roboxInfo.deviceId + ".");
+   }
    
    // **************************************************************************
    //                          RoboxListener interface
@@ -100,7 +107,7 @@ public class Debugger implements ScannerListener, RoboxListener
    @Override
    public void onConnected(Robox robox)
    {
-      println("Robox [" +  robox.getRoboxInfo().deviceId + "] connected at " + robox.getRoboxInfo().address.toString() + ".");
+      println("Connected to " +  robox.getRoboxInfo().deviceId + ".");
       
       // Stop the scanner.
       scanner.stop();   
@@ -109,7 +116,7 @@ public class Debugger implements ScannerListener, RoboxListener
    @Override
    public void onDisconnected(Robox robox)
    {
-      println("Robox [" +  robox.getRoboxInfo().deviceId + "] disconnected.");
+      println("Disconnected from " +  robox.getRoboxInfo().deviceId + ".");
       
       // Start the scanner.
       detectedRoboxes.clear();
@@ -277,6 +284,8 @@ public class Debugger implements ScannerListener, RoboxListener
    }
    
    private static final int UDP_PORT = 1993;
+   
+   private static final int SCANNER_FREQUENCY = 5000;  // milliseconds
    
    private JFrame frame;
    
