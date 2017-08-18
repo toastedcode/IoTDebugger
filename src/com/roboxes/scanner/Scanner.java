@@ -64,6 +64,11 @@ public class Scanner implements DataListener
       }, 0, pingFrequency);
    }
    
+   public void pause()
+   {
+      pingTimer.cancel();
+   }
+   
    public void stop()
    {
       server.stop();
