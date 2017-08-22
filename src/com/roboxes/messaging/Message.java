@@ -68,6 +68,18 @@ public class Message
       json.put("topic", topic);      
    }
    
+   public String getTransactionId()
+   {
+      return ((String)json.get("transactionId"));
+   }
+
+   @SuppressWarnings("unchecked")
+   public void setTransactionId(
+      String transactionId)
+   {
+      json.put("transactionId", transactionId);      
+   }
+   
    @SuppressWarnings("unchecked")
    public void put(String key, Object value)
    {

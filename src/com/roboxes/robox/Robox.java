@@ -8,6 +8,9 @@ import com.roboxes.communication.TcpClient;
 import com.roboxes.communication.TcpClientListener;
 import com.roboxes.messaging.Message;
 import com.roboxes.messaging.Protocol;
+import com.roboxes.robox.component.Motor;
+import com.roboxes.robox.component.MotorPair;
+import com.roboxes.robox.component.Servo;
 import com.roboxes.scanner.HealthMonitor;
 import com.roboxes.scanner.HealthMonitorListener;
 
@@ -87,6 +90,29 @@ public class Robox implements TcpClientListener, HealthMonitorListener
    public boolean pong()
    {
       return (sendMessage(new Message("pong")));
+   }
+   
+   public boolean reset()
+   {
+      return (sendMessage(new Message("reset")));
+   }
+   
+   public boolean analogWrite(int pin, int value)
+   {
+      Message message = new Message("analogWrite");
+      message.put("pin",  pin);
+      message.put("value",  value);
+      
+      return (sendMessage(message));
+   }
+   
+   public boolean digitalWrite(int pin, int value)
+   {
+      Message message = new Message("digitalWrite");
+      message.put("pin",  pin);
+      message.put("value",  value);
+      
+      return (sendMessage(message));
    }
    
    // **************************************************************************
@@ -188,6 +214,16 @@ public class Robox implements TcpClientListener, HealthMonitorListener
          disconnect();
       }
    }
+   
+   public MotorPair motorPair = new MotorPair("motorPair", this);
+   
+   public Motor motor1 = new Motor("motor1", this);
+   
+   public Motor motor2 = new Motor("motor2", this);
+   
+   public Servo servo1 = new Servo("servo1", this);
+   
+   public Servo servo2 = new Servo("servo2", this);
    
    // **************************************************************************
    //                                 Private
