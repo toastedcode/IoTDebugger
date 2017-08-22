@@ -1,9 +1,10 @@
 package com.roboxes.robox;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Arrays;
 
-public class RoboxInfo
+public class RoboxInfo implements Serializable
 {
    public RoboxInfo()
    {
