@@ -78,6 +78,49 @@ public class Robox implements TcpClientListener, HealthMonitorListener
    {
       return (listeners.remove(listener));
    }
+   
+   // **************************************************************************
+   //                                  Configuration
+   
+   public boolean setDeviceConfig(
+      String deviceId)
+   {
+      Message message = new Message("deviceConfig");
+      message.put("deviceId", deviceId);
+      message.put("update",  true);
+      
+      return (sendMessage(message));
+   }
+   
+   public boolean setWifiConfig(
+      String ssid,
+      String password)
+   {
+      Message message = new Message("wifiConfig");
+      message.put("ssid", ssid);
+      message.put("password", password);
+      message.put("update",  true);
+      
+      return (sendMessage(message));
+   }
+   
+   public boolean setServerConfig(
+      String host,
+      int port,
+      String userId,
+      String password,
+      String token)
+   {
+      Message message = new Message("serverConfig");
+      message.put("host", host);
+      message.put("port", port);
+      message.put("userId", userId);
+      message.put("password",  password);
+      message.put("token",  token);
+      message.put("update",  true);
+      
+      return (sendMessage(message));
+   }
 
    // **************************************************************************
    //                                  Control

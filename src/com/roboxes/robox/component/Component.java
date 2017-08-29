@@ -16,6 +16,11 @@ public class Component
       return (componentId);
    }
    
+   protected Robox getParent()
+   {
+      return (parent);
+   }
+   
    protected boolean sendMessage(Message message)
    {
       message.setDestination(getId());
