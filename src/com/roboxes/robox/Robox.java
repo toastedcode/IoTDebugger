@@ -8,6 +8,7 @@ import com.roboxes.communication.TcpClient;
 import com.roboxes.communication.TcpClientListener;
 import com.roboxes.messaging.Message;
 import com.roboxes.messaging.Protocol;
+import com.roboxes.robox.component.Led;
 import com.roboxes.robox.component.Motor;
 import com.roboxes.robox.component.MotorPair;
 import com.roboxes.robox.component.Servo;
@@ -267,6 +268,8 @@ public class Robox implements TcpClientListener, HealthMonitorListener
    public Servo servo1 = new Servo("servo1", this);
    
    public Servo servo2 = new Servo("servo2", this);
+   
+   public Led led1 = new Led("statusLed", this);
    
    // **************************************************************************
    //                                 Private

@@ -211,6 +211,7 @@ public class ScriptTest extends JFrame implements ScannerListener, RoboxListener
          
       }
    }
+ 
    private static final int UDP_PORT = 1993;
    
    private static final int SCANNER_FREQUENCY = 5000;  // milliseconds
