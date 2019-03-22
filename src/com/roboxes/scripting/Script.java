@@ -153,6 +153,11 @@ public class Script
       return (execute(function.getCallString(), parameters));
    }
    
+   public void stop()
+   {
+      
+   }
+   
    private boolean isValid = false;
    
    private Interpreter interpreter = new Interpreter();

@@ -74,7 +74,7 @@ public class ScriptTest extends JFrame implements ScannerListener, RoboxListener
       txtrEnterYourProgram.setBounds(40, 52, 362, 166);
       contentPane.add(txtrEnterYourProgram);
       
-      JButton btnNewButton = new JButton("New button");
+      JButton btnNewButton = new JButton("Play");
       btnNewButton.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent arg0)
          {
@@ -82,12 +82,22 @@ public class ScriptTest extends JFrame implements ScannerListener, RoboxListener
             evaluate(code);
          }
       });
-      btnNewButton.setBounds(313, 229, 89, 23);
+      btnNewButton.setBounds(211, 229, 89, 23);
       contentPane.add(btnNewButton);
       
       indicator = new IndicatorLight();
       indicator.setBounds(371, 11, 30, 30);
       contentPane.add(indicator);
+      
+      JButton btnNewButton_1 = new JButton("Stop");
+      btnNewButton_1.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent arg0)
+         {
+            script.stop();
+         }
+      });
+      btnNewButton_1.setBounds(313, 229, 89, 23);
+      contentPane.add(btnNewButton_1);
       
       setVisible(true);
       

@@ -80,7 +80,7 @@ public class StressTester extends JFrame implements ScannerListener, RoboxListen
       contentPane.add(lblNewLabel);
       
       frequencySlider = new JSlider();
-      frequencySlider.setMaximum(10);
+      frequencySlider.setMaximum(20);
       frequencySlider.setValue(0);
       frequencySlider.addChangeListener(new ChangeListener() {
          public void stateChanged(ChangeEvent arg0) {

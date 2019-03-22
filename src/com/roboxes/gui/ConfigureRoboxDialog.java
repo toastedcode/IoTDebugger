@@ -10,6 +10,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.SpringLayout;
+import javax.swing.JSeparator;
 
 @SuppressWarnings("serial")
 public class ConfigureRoboxDialog extends JDialog
